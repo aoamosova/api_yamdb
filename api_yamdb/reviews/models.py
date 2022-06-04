@@ -86,7 +86,6 @@ class Titles(models.Model):
         verbose_name='Категория',
         on_delete=models.SET_NULL,
         related_name="titles",
-        blank=True,
         null=True
     )
     rating = models.IntegerField(

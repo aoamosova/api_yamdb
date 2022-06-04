@@ -44,7 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TitleSerialiser(serializers.ModelSerializer):
-
     genre = serializers.SlugRelatedField(
         slug_field='slug', many=True, queryset=Genres.objects.all()
     )
@@ -61,7 +60,7 @@ class GenreSerialiser(serializers.ModelSerializer):
 
     class Meta:
         model = Genres
-        exclude = ['id', ]
+        exclude = ('id',)
         lookup_fields = 'slug'
         extra_kwargs = {
             'url': {'lookup_fields': 'slug'}
@@ -72,11 +71,21 @@ class CategorySerialiser(serializers.ModelSerializer):
 
     class Meta:
         model = Categories
-        exclude = ['id', ]
+        exclude = ('id',)
         lookup_fields = 'slug'
         extra_kwargs = {
             'url': {'lookup_fields': 'slug'}
         }
+
+
+class ReadOnlyTitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerialiser(many=True)
+    category = CategorySerialiser()
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre', 'rating')
+        model = Titles
 
 
 class ReviewSerializer(serializers.ModelSerializer):

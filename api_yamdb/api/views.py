@@ -1,9 +1,9 @@
 from api.filters import TitleFilter
-from api.permissions import IsAdminOrReadOnly, IsAdminOrSuperUser
+from api.permissions import IsAdminOrReadOnly, IsAdminOrSuperUser, IsAuthorOrReadOnly
 from api.serializers import (CategorySerialiser, CommentSerializer,
                              FullUserSerializer, GenreSerialiser,
                              ReviewSerializer, TitleSerialiser,
-                             UserEmailCodeSerializer, UserSerializer)
+                             UserEmailCodeSerializer, UserSerializer, ReadOnlyTitleSerializer)
 from api.utils import email_code, send_email
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Categories, Genres, Titles, User
+from api.mixins import ListCreateDestroyViewSet
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
@@ -100,12 +101,16 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = {DjangoFilterBackend}
     filterset_class = TitleFilter
 
+    def get_serializer_class(self):
+        if self.action in ('retrive', 'list'):
+            return ReadOnlyTitleSerializer
+        return TitleSerialiser
 
-class GenreViewSet(viewsets.ModelViewSet):
+
+class GenreViewSet(ListCreateDestroyViewSet):
     """
     This viewset automatically provides `list`, `create`, `destroy` actions.
     """
-    http_method_names = ['get', 'post', 'delete']
     queryset = Genres.objects.all()
     serializer_class = GenreSerialiser
     permission_classes = {IsAdminOrReadOnly}
@@ -114,11 +119,10 @@ class GenreViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(ListCreateDestroyViewSet):
     """
     This viewset automatically provides `list`, `create`, `destroy` actions.
     """
-    http_method_names = ['get', 'post', 'delete']
     queryset = Categories.objects.all()
     serializer_class = CategorySerialiser
     permission_classes = {IsAdminOrReadOnly}
@@ -129,7 +133,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
         title = get_title(self.kwargs['title_id'])
@@ -145,7 +149,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_queryset(self):
         title = get_title(self.kwargs['title_id'])
