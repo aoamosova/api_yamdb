@@ -61,7 +61,7 @@ class GenreSerialiser(serializers.ModelSerializer):
 
     class Meta:
         model = Genres
-        exclude = {'id'}
+        exclude = ['id', ]
         lookup_fields = 'slug'
         extra_kwargs = {
             'url': {'lookup_fields': 'slug'}
@@ -72,7 +72,7 @@ class CategorySerialiser(serializers.ModelSerializer):
 
     class Meta:
         model = Categories
-        exclude = {'id'}
+        exclude = ['id', ]
         lookup_fields = 'slug'
         extra_kwargs = {
             'url': {'lookup_fields': 'slug'}
