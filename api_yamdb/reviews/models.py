@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .validators import validate_year
+from reviews.validators import validate_year
 
 
 class User(AbstractUser):
@@ -12,11 +12,30 @@ class User(AbstractUser):
         ('moderator', 'Moderator'),
         ('admin', 'Administrator'),
     )
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
-    role = models.CharField(max_length=256, choices=ROLES, default=ROLES[0][0])
-    email = models.EmailField(_('email address'), blank=False, unique=True, max_length=254)
-    bio = models.TextField(_('biography'), blank=True,)
-    confirmation_code = models.IntegerField(_('confirmation code'), blank=True, null=True)
+    first_name = models.CharField(
+        _('first name'),
+        max_length=150,
+        blank=True
+    )
+    role = models.CharField(
+        max_length=256,
+        choices=ROLES,
+        default=ROLES[0][0]
+    )
+    email = models.EmailField(
+        _('email address'),
+        blank=False,
+        unique=True,
+        max_length=254
+    )
+    bio = models.TextField(
+        _('biography'),
+        blank=True,
+    )
+    confirmation_code = models.IntegerField(
+        _('confirmation code'),
+        blank=True, null=True
+    )
 
     def __str__(self):
         return self.username
@@ -28,7 +47,6 @@ class Genres(models.Model):
         max_length=256
     )
     slug = models.SlugField(
-        verbose_name='Идентификатор',
         max_length=50,
         unique=True
     )
@@ -39,7 +57,7 @@ class Genres(models.Model):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ['name']
+        ordering = ('name',)
 
 
 class Categories(models.Model):
@@ -48,7 +66,6 @@ class Categories(models.Model):
         max_length=256
     )
     slug = models.SlugField(
-        verbose_name='Идентификатор',
         max_length=50,
         unique=True
     )
@@ -59,7 +76,7 @@ class Categories(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ['name']
+        ordering = ('name',)
 
 
 class Titles(models.Model):
@@ -100,7 +117,7 @@ class Titles(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Призведения'
-        ordering = ['name']
+        ordering = ('name',)
 
 
 class GenreTitle(models.Model):

@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
+
 from reviews.models import (Categories, Comments, Genres, Ratings, Reviews,
                             Titles, User)
 
@@ -23,8 +24,8 @@ class UserEmailCodeSerializer(serializers.Serializer):
         user = get_object_or_404(User, username=data['username'])
         if confirmation_code == settings.RESET_CONFIRMATION_CODE:
             raise serializers.ValidationError(
-                (f'Данный код подтверждения уже использовался.'
-                 f'Получите новый через регистрацию'))
+                ('Данный код подтверждения уже использовался.'
+                 'Получите новый через регистрацию'))
         if user.confirmation_code != confirmation_code:
             raise serializers.ValidationError('Неверный код подтверждения')
         return data
@@ -44,6 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TitleSerialiser(serializers.ModelSerializer):
+    """Serializer for title model with all fields"""
     genre = serializers.SlugRelatedField(
         slug_field='slug', many=True, queryset=Genres.objects.all()
     )
@@ -57,7 +59,7 @@ class TitleSerialiser(serializers.ModelSerializer):
 
 
 class GenreSerialiser(serializers.ModelSerializer):
-
+    """Serializer for genre model with exclude"""
     class Meta:
         model = Genres
         exclude = ('id',)
@@ -68,7 +70,7 @@ class GenreSerialiser(serializers.ModelSerializer):
 
 
 class CategorySerialiser(serializers.ModelSerializer):
-
+    """Serializer for genre model with exclude"""
     class Meta:
         model = Categories
         exclude = ('id',)
@@ -79,12 +81,14 @@ class CategorySerialiser(serializers.ModelSerializer):
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
+    """Serializer for read only title model with all fields"""
     genre = GenreSerialiser(many=True)
     category = CategorySerialiser()
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre', 'rating')
+        fields = ('id', 'name', 'year', 'description',
+                  'category', 'genre', 'rating')
         model = Titles
 
 

@@ -1,10 +1,3 @@
-from api.filters import TitleFilter
-from api.permissions import IsAdminOrReadOnly, IsAdminOrSuperUser, IsAuthorOrReadOnly
-from api.serializers import (CategorySerialiser, CommentSerializer,
-                             FullUserSerializer, GenreSerialiser,
-                             ReviewSerializer, TitleSerialiser,
-                             UserEmailCodeSerializer, UserSerializer, ReadOnlyTitleSerializer)
-from api.utils import email_code, send_email
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,8 +6,18 @@ from rest_framework import (filters, mixins, pagination, permissions, status,
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Categories, Genres, Titles, User
+
+from api.filters import TitleFilter
 from api.mixins import ListCreateDestroyViewSet
+from api.permissions import (IsAdminOrReadOnly, IsAdminOrSuperUser,
+                             IsAuthorOrReadOnly)
+from api.serializers import (CategorySerialiser, CommentSerializer,
+                             FullUserSerializer, GenreSerialiser,
+                             ReadOnlyTitleSerializer, ReviewSerializer,
+                             TitleSerialiser, UserEmailCodeSerializer,
+                             UserSerializer)
+from api.utils import email_code, send_email
+from reviews.models import Categories, Genres, Titles, User
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
@@ -25,7 +28,6 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
     permission_classes = (IsAdminOrSuperUser,)
-    pagination_class = pagination.LimitOffsetPagination
     search_fields = ('username',)
 
     @action(detail=False, url_path='me', methods=['GET', 'PATCH'],
@@ -90,15 +92,14 @@ class GetTokenViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    """
-    This viewset automatically provides `list`, `create`, `retrieve`,
-    `update`, `partial_update` and `destroy` actions.
+    """ This viewset automatically provides `list`, `create`, `retrieve`,
+        `update`, `partial_update` and `destroy` actions.
     """
     queryset = Titles.objects.all()
     serializer_class = TitleSerialiser
-    permission_classes = {IsAdminOrReadOnly}
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = pagination.LimitOffsetPagination
-    filter_backends = {DjangoFilterBackend}
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
@@ -108,26 +109,24 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
-    """
-    This viewset automatically provides `list`, `create`, `destroy` actions.
+    """ This viewset automatically provides `list`, `create`, `destroy` actions.
     """
     queryset = Genres.objects.all()
     serializer_class = GenreSerialiser
-    permission_classes = {IsAdminOrReadOnly}
-    filter_backends = {filters.SearchFilter}
-    search_fields = {'name'}
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     lookup_field = 'slug'
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
-    """
-    This viewset automatically provides `list`, `create`, `destroy` actions.
+    """ This viewset automatically provides `list`, `create`, `destroy` actions.
     """
     queryset = Categories.objects.all()
     serializer_class = CategorySerialiser
-    permission_classes = {IsAdminOrReadOnly}
-    filter_backends = {filters.SearchFilter}
-    search_fields = {'name'}
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     lookup_field = 'slug'
 
 
