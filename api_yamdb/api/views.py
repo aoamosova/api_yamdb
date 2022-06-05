@@ -1,9 +1,11 @@
 from api.filters import TitleFilter
-from api.permissions import IsAdminOrReadOnly, IsAdminOrSuperUser, IsAuthorOrReadOnly
+from api.permissions import (IsAdminOrReadOnly, IsAdminOrSuperUser,
+                             IsAuthorOrReadOnly)
 from api.serializers import (CategorySerialiser, CommentSerializer,
                              FullUserSerializer, GenreSerialiser,
                              ReviewSerializer, TitleSerialiser,
-                             UserEmailCodeSerializer, UserSerializer, ReadOnlyTitleSerializer)
+                             UserEmailCodeSerializer, UserSerializer,
+                             ReadOnlyTitleSerializer)
 from api.utils import email_code, send_email
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -13,7 +15,7 @@ from rest_framework import (filters, mixins, pagination, permissions, status,
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Categories, Genres, Titles, User
+from reviews.models import Categories, Genres, Title, User
 from api.mixins import ListCreateDestroyViewSet
 
 
@@ -94,7 +96,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     This viewset automatically provides `list`, `create`, `retrieve`,
     `update`, `partial_update` and `destroy` actions.
     """
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitleSerialiser
     permission_classes = {IsAdminOrReadOnly}
     pagination_class = pagination.LimitOffsetPagination
@@ -132,6 +134,10 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update`, `partial_update` and `destroy` actions.
+    """
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -148,6 +154,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update`, `partial_update` and `destroy` actions.
+    """
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -168,8 +178,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 def get_title(title_id):
-    return get_object_or_404(Titles, id=title_id)
+    """the function gets the object by id"""
+    return get_object_or_404(Title, id=title_id)
 
 
 def get_review(title, review_id):
+    """the function gets the object by id"""
     return title.reviews.get(id=review_id)

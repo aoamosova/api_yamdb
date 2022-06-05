@@ -62,7 +62,7 @@ class Categories(models.Model):
         ordering = ['name']
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField(
         verbose_name='Название',
         max_length=200
@@ -105,7 +105,7 @@ class Titles(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Titles,
+        Title,
         verbose_name='Произведение',
         on_delete=models.CASCADE
     )
@@ -123,7 +123,7 @@ class GenreTitle(models.Model):
         verbose_name_plural = 'Произведения и жанры'
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     text = models.TextField(verbose_name='Отзыв')
     author = models.ForeignKey(
         User,
@@ -137,7 +137,7 @@ class Reviews(models.Model):
     )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         verbose_name='Произведение',
         related_name='reviews'
@@ -146,24 +146,16 @@ class Reviews(models.Model):
     def __str__(self) -> str:
         return self.text
 
-    def delete(self, using=None, keep_parents=False):
-        rating_obj, created = Ratings.objects.get_or_create(title=self.title)
-        rating_obj.count_score = rating_obj.count_score - 1
-        rating_obj.summ_score = rating_obj.summ_score - self.score
-        if rating_obj.count_score == 0:
-            rating_obj.rating = 0
-        else:
-            rating_obj.rating = rating_obj.summ_score / rating_obj.count_score
-        rating_obj.save()
-        return super().delete(using, keep_parents)
-
     class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
         constraints = [
             models.UniqueConstraint(
-                fields=['title', 'author'],
+                fields=['title', 'author',],
                 name='uniq_reviews_title_author'
             )
         ]
+        ordering = ['pub_date']
 
 
 class Comments(models.Model):
@@ -175,13 +167,13 @@ class Comments(models.Model):
         related_name='comments'
     )
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         verbose_name='Произведение',
         related_name='comments'
     )
     review = models.ForeignKey(
-        Reviews,
+        Review,
         on_delete=models.CASCADE,
         verbose_name='Отзыв',
         related_name='comments'
@@ -191,26 +183,7 @@ class Comments(models.Model):
     def __str__(self) -> str:
         return f'{self.author}: {self.text}'
 
-
-class Ratings(models.Model):
-    title = models.ForeignKey(
-        Titles,
-        on_delete=models.CASCADE,
-        verbose_name='Произведение',
-        related_name='rating_title'
-    )
-    rating = models.IntegerField(
-        verbose_name='Рейтинг',
-        default=1
-    )
-    count_score = models.IntegerField(
-        verbose_name='Количество оценок',
-        default=0
-    )
-    summ_score = models.IntegerField(
-        verbose_name='Сумма оценок',
-        default=0
-    )
-
-    def __str__(self) -> str:
-        return f'{self.title.text}: {self.rating}'
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['pub_date']
