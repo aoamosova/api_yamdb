@@ -1,9 +1,8 @@
 from django.conf import settings
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-
-from reviews.models import (Categories, Comments, Genres, Ratings, Reviews,
-                            Titles, User)
+from reviews.models import Categories, Comments, Genres, Review, Title, User
 
 
 class FullUserSerializer(serializers.ModelSerializer):
@@ -52,10 +51,14 @@ class TitleSerialiser(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Categories.objects.all()
     )
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         fields = '__all__'
-        model = Titles
+        model = Title
+
+    def get_rating(self, obj):
+        return get_reting_titles(obj)
 
 
 class GenreSerialiser(serializers.ModelSerializer):
@@ -84,12 +87,15 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
     """Serializer for read only title model with all fields"""
     genre = GenreSerialiser(many=True)
     category = CategorySerialiser()
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         fields = ('id', 'name', 'year', 'description',
                   'category', 'genre', 'rating')
-        model = Titles
+        model = Title
+
+    def get_rating(self, obj):
+        return get_reting_titles(obj)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -100,28 +106,22 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
     title = serializers.SlugRelatedField(
         slug_field='id',
-        queryset=Titles.objects.all(),
+        queryset=Title.objects.all(),
         read_only=False,
         required=False
     )
 
     class Meta:
         fields = '__all__'
-        model = Reviews
+        model = Review
 
     def create(self, validated_data):
-        if self.is_valid:
-            title = validated_data.get('title')
-            score = validated_data.get('score')
-            rating_obj, created = Ratings.objects.get_or_create(title=title)
-            rating_obj.count_score = rating_obj.count_score + 1
-            rating_obj.summ_score = rating_obj.summ_score + score
-            if rating_obj.count_score == 0:
-                rating_obj.rating = 0
-            else:
-                rating_obj.rating = (rating_obj.summ_score
-                                     / rating_obj.count_score)
-            rating_obj.save()
+        count_review_title = Review.objects.filter(
+            author=validated_data.get('author'),
+            title=validated_data.get('title')
+        ).count()
+        if count_review_title == 1:
+            raise serializers.ValidationError('Нет')
         return super().create(validated_data)
 
 
@@ -132,13 +132,13 @@ class CommentSerializer(serializers.ModelSerializer):
     )
     title = serializers.SlugRelatedField(
         slug_field='id',
-        queryset=Titles.objects.all(),
+        queryset=Title.objects.all(),
         read_only=False,
         required=False
     )
     review = serializers.SlugRelatedField(
         slug_field='id',
-        queryset=Reviews.objects.all(),
+        queryset=Review.objects.all(),
         read_only=False,
         required=False
     )
@@ -147,3 +147,11 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Comments
         read_only_fields = ('author',)
+
+
+def get_reting_titles(title):
+    """calculation of the rating of the title"""
+    avg_score = title.reviews.aggregate(average_price=Avg("score"))
+    if not avg_score['average_price']:
+        return None
+    return int(avg_score['average_price'])

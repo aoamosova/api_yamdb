@@ -1,12 +1,3 @@
-from django.conf import settings
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import (filters, mixins, pagination, permissions, status,
-                            viewsets)
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
-
 from api.filters import TitleFilter
 from api.mixins import ListCreateDestroyViewSet
 from api.permissions import (IsAdminOrReadOnly, IsAdminOrSuperUser,
@@ -17,7 +8,15 @@ from api.serializers import (CategorySerialiser, CommentSerializer,
                              TitleSerialiser, UserEmailCodeSerializer,
                              UserSerializer)
 from api.utils import email_code, send_email
-from reviews.models import Categories, Genres, Titles, User
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import (filters, mixins, pagination, permissions, status,
+                            viewsets)
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
+from reviews.models import Categories, Genres, Title, User
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
@@ -28,6 +27,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
     permission_classes = (IsAdminOrSuperUser,)
+    pagination_class = pagination.LimitOffsetPagination
     search_fields = ('username',)
 
     @action(detail=False, url_path='me', methods=['GET', 'PATCH'],
@@ -95,7 +95,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """ This viewset automatically provides `list`, `create`, `retrieve`,
         `update`, `partial_update` and `destroy` actions.
     """
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitleSerialiser
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = pagination.LimitOffsetPagination
@@ -131,6 +131,10 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update`, `partial_update` and `destroy` actions.
+    """
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -147,6 +151,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update`, `partial_update` and `destroy` actions.
+    """
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -167,8 +175,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 def get_title(title_id):
-    return get_object_or_404(Titles, id=title_id)
+    """the function gets the object by id"""
+    return get_object_or_404(Title, id=title_id)
 
 
 def get_review(title, review_id):
+    """the function gets the object by id"""
     return title.reviews.get(id=review_id)
