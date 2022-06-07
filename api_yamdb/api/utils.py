@@ -16,8 +16,6 @@ def custom_exception_handler(exc, context):
 
     Returns: response object
     """
-    # Call REST framework's default exception handler first,
-    # to get the standard error response.
     response = exception_handler(exc, context)
     if response is not None and isinstance(exc, Http404):
         response.data['detail'] = exc.args[0]

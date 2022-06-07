@@ -5,10 +5,10 @@ from django.urls import include, path
 from rest_framework import routers
 
 router = routers.DefaultRouter()
-router.register(r'users', AdminUserViewSet, basename='admin_user')
-router.register(r'titles', TitleViewSet)
-router.register(r'genres', GenreViewSet)
-router.register(r'categories', CategoryViewSet)
+router.register('users', AdminUserViewSet, basename='admin_user')
+router.register('titles', TitleViewSet)
+router.register('genres', GenreViewSet)
+router.register('categories', CategoryViewSet)
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
@@ -20,8 +20,8 @@ router.register(
 )
 
 auth_router = routers.DefaultRouter()
-auth_router.register(r'signup', UserViewSet, basename='signup')
-auth_router.register(r'token', GetTokenViewSet, basename='token')
+auth_router.register('signup', UserViewSet, basename='signup')
+auth_router.register('token', GetTokenViewSet, basename='token')
 
 
 urlpatterns = [
