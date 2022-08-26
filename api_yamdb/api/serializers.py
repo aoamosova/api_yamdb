@@ -152,6 +152,4 @@ class CommentSerializer(serializers.ModelSerializer):
 def get_reting_titles(title):
     """calculation of the rating of the title"""
     avg_score = title.reviews.aggregate(average_price=Avg("score"))
-    if not avg_score['average_price']:
-        return None
-    return int(avg_score['average_price'])
+    return int(avg_score['average_price']) if avg_score['average_price'] else None
